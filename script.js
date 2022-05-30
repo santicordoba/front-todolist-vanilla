@@ -1,3 +1,5 @@
+const API_URL = "http://localhost:3001/api"
+
 const registro = document.querySelector(".registro");
 const login = document.querySelector(".login");
 
@@ -26,76 +28,62 @@ botonRegistro.addEventListener("click", ()=>{
 })
 
 
-
-const registrarse = document.querySelector("#registrarse");
-
-registrarse.addEventListener("click", (e)=> {
+const postRegistro = async () => {
     const nickname = document.querySelector("#nickname").value;
     const email = document.querySelector("#email").value;
     const password = document.querySelector("#password").value;
-
-
-    // const xhr = new XMLHttpRequest();
-    // function onRequestHandler(){
-    //     if(this.readyState == 4 && this.status == 200){
-    //         const respuesta = this.response;
-    //         console.log(respuesta);
-    //     }
-    // }
-    
-    // xhr.addEventListener("load", onRequestHandler);
-    // xhr.open("POST", `${API_URL}/auth/register`);
-    // xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    // xhr.send(JSON.stringify(register_json));
-    // console.log(xhr.response);
-
     body = {
         "nickname": nickname,
         "email": email,
         "password": password
     }
-
-    const API_URL = "http://localhost:3001/api"
-
-    const peticion = fetch(`${API_URL}/auth/register`,{
+    const peticion = await fetch(`${API_URL}/auth/register`,{
         method: "POST",
         body: JSON.stringify(body),
         headers: {"Content-type": "application/json"}
     }).then(res=> res.json())
     .then(res=> console.log(res));
-
     login.style.display = "block";
     registro.style.display = "none"
-    
+}
 
-})
 
-const logearse = document.querySelector("#logearse");
+const registrarse = document.querySelector("#registrarse");
 
-logearse.addEventListener("click", async (e) => {
-    e.preventDefault;
+registrarse.addEventListener("click", postRegistro)
+
+const postLogearse = async () => {
     const nickname = document.querySelector("#login_nickname").value;
     const password = document.querySelector("#login_password").value;
     body = {
         "nickname": nickname,
         "password": password
     }
-
-
-    const API_URL = "http://localhost:3001/api"
-
-
-    const delay = ms => new Promise(res => setTimeout(res, ms));
-    let data;
-    const peticion = fetch(`${API_URL}/auth/login`,{
+    const peticion = await fetch(`${API_URL}/auth/login`,{
         method: "POST",
         body: JSON.stringify(body),
         headers: {"Content-type": "application/json"}
     }).then(res=> res.json())
     .then(res=> data = res);
-    await delay(300)
-    console.log(data);
-
     login.style.display = "none";
     registro.style.display = "none"
-})
+
+    if(data.token){
+        botonLogin.style.display = "none";
+        botonRegistro.style.display = "none"
+        const div = document.querySelector(".auth");
+
+        const mensaje= `Hola ${data.user.nickname}`;
+
+        div.innerHTML+= mensaje;
+    } 
+
+    return data;
+}
+
+const logearse = document.querySelector("#logearse");
+
+
+logearse.addEventListener("click", postLogearse);
+
+
