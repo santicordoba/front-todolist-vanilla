@@ -1,4 +1,4 @@
-.auth{
+.auth, .user-logged{
     width: 50%;
     background-color: lightblue;
     padding: 50px;
@@ -34,7 +34,7 @@ body{
     font-weight: bold;
 }
 
-.registro, .login {
+.registro, .login, .addTaskForm {
     width: 100%;
     text-align: center;
     margin: auto;
@@ -64,7 +64,3 @@ input[type="password"]{
     padding: 12px;
 }
 
-
-.login {
-
-}
