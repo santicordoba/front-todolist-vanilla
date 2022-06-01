@@ -8,17 +8,23 @@
     <title>Mis Tareas Pendientes v 0.0.1</title>
 </head>
 <body>
+    <header>
+        <nav class="nav">
+            <p>Mis Tareas Pendientes</p>
+        </nav>
+    </header>
     <div class="app">
         <div class="user-logged">
             <div class="opciones">
-                <button class="addTask">NUEVA TAREA</button>
+                <button class="addTask">➕ NUEVA TAREA</button>
             </div>
             <div class="addTaskForm">
-                <h1>Nueva Tarea</h1>
-                    <input type="text" name="" id="nickname" placeholder="Nickname">
-                    <input type="email" name="" id="email" placeholder="Email">
-                    <input type="password" name="" id="password" placeholder="Password">
-                    <input type="submit" class="button" value="Registrarse" id="registrarse">
+                <h1> Nueva Tarea</h1>
+                    <input type="text" name="" id="title" placeholder="Titulo">
+                    <input type="text" name="" id="description" placeholder="Descripción">
+                    <input type="date" name="" id="date">
+                    <input type="text" name="" id="categoryId" placeholder="categoryId">
+                    <input type="submit" class="button" value="Agregar Nueva Tarea" id="addTask">
             </div>
             <div class="tasks">
                 <h1>TareasPendientes</h1>

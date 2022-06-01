@@ -1,15 +1,21 @@
 const API_URL = "http://localhost:3001/api"
 
+const cerrarSession = () => {
+    localStorage.removeItem("user")
+    window.location.href = "/";
+}
+
 if(!localStorage.getItem("user")){
 
     const app = document.querySelector(".app");
 
+    const nav = document.querySelector(".nav");
+
+    nav.innerHTML += `<div class="align"><input type="submit" class="botonRegistro button" value="REGISTRARSE">
+    <input type="submit" class="botonLogin button" value="INICIAR SESION"></div>` 
+
     app.innerHTML = `
     <div class="auth">
-        <div class="opciones">
-            <button class="botonRegistro">REGISTRARSE</button>
-            <button class="botonLogin">INICIAR SESION</button>
-        </div>
         <div class="registro">
             <h1>Registro</h1>
                 <input type="text" name="" id="nickname" placeholder="Nickname">
@@ -111,9 +117,25 @@ if(!localStorage.getItem("user")){
     logearse.addEventListener("click", postLogearse);
     
 } else {
+
+    const nav = document.querySelector(".nav");
+    const close = document.createElement("input");
+    const align = document.createElement("div");
+    const nickname = document.createElement("p");
+    nickname.innerHTML = `Hola, ${JSON.parse(localStorage.getItem("user")).user.nickname}`;
+    align.appendChild(nickname);
+    close.setAttribute("type", "submit");
+    close.setAttribute("value", "Cerrar Sesion");
+    close.classList.add("button");
+    align.classList.add("align");
+    align.appendChild(close);
+    nav.appendChild(align);
+
+    close.addEventListener("click", cerrarSession);
+
     const div = document.querySelector(".tasks");
     const user = JSON.parse(localStorage.getItem("user"));
-    console.log(user.token)
+
     const getTasks = async () => {
         const peticion = await fetch(`${API_URL}/tasks/`, {
             method: "GET",
@@ -134,6 +156,48 @@ if(!localStorage.getItem("user")){
         });
     }
     getTasks()
+
+    const addTask = document.querySelector(".addTask");
+    const addTaskForm = document.querySelector(".addTaskForm");
+
+    addTaskForm.style.display = "none";
+
+    addTask.addEventListener("click", () => {
+        if(addTaskForm.style.display == "none"){
+            addTaskForm.style.display = "block";
+        } else if (addTaskForm.style.display == "block"){
+            addTaskForm.style.display = "none";
+        }
+    });
+
+
+    const postTask = async () => {
+        try{
+            const title = document.querySelector("#title").value;
+            const description = document.querySelector("#description").value;
+            const date = document.querySelector("#date").value;
+            const categoryId = document.querySelector("#categoryId").value;
+            body = {
+                "title": title,
+                "description": description,
+                "fecha": date,
+                "categoryId": categoryId,
+                "userId": user.user._id
+            }
+            const peticion = await fetch(`${API_URL}/tasks/`,{
+                method: "POST",
+                body: JSON.stringify(body),
+                headers: {"Content-type": "application/json", "Authorization": "Bearer " + user.token}
+            });
+            location.reload();
+        } catch(e){
+            console.error(e)
+        }
+    }
+
+    const botonAddTask = document.querySelector("#addTask");
+
+    botonAddTask.addEventListener("click", postTask);
 
 }
 

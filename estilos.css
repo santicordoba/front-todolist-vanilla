@@ -1,3 +1,7 @@
+*{
+    margin: 0;
+}
+
 .auth, .user-logged{
     width: 50%;
     background-color: lightblue;
@@ -63,4 +67,37 @@ input[type="email"]{
 input[type="password"]{
     padding: 12px;
 }
+input[type="date"]{
+    padding: 12px 42px;
+}
 
+
+nav {
+    width: 100%;
+    margin: auto;
+    height: 56px;
+    background-color: lightblue;
+    display: flex;
+    justify-content: space-between;
+}
+
+nav p {
+    font-family: monospace;
+    font-size: 20px;
+    padding: 10px;
+    margin: auto;
+    text-align: center;
+}
+
+.button{
+    cursor: pointer;
+}
+
+.align{
+    display: flex;
+    margin-right: 10%;
+}
+
+.align input {
+    margin: 10px;
+}
