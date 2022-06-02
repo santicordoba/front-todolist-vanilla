@@ -1,9 +1,61 @@
 const API_URL = "http://localhost:3001/api"
 
+const user = JSON.parse(localStorage.getItem("user")) || null;
+
 const cerrarSession = () => {
     localStorage.removeItem("user")
     window.location.href = "/";
 }
+
+const postTask = async () => {
+    try{
+        const title = document.querySelector("#title").value;
+        const description = document.querySelector("#description").value;
+        const date = document.querySelector("#date").value;
+        const categoryId = document.querySelector('#categoryList option:checked').value
+        body = {
+            "title": title,
+            "description": description,
+            "fecha": date,
+            "categoryId": categoryId,
+            "userId": user.user._id
+        }
+        const peticion = await fetch(`${API_URL}/tasks/`,{
+            method: "POST",
+            body: JSON.stringify(body),
+            headers: {"Content-type": "application/json", "Authorization": "Bearer " + user.token}
+        });
+        location.reload();
+    } catch(e){
+        console.error(e)
+    }
+}
+
+const postCategory = async () => {
+    try{
+        const name = document.querySelector("#categoryname").value;
+        const importance = document.querySelector("#importance").value;
+        body = {
+            "name": name,
+            "importance": importance,
+            "userId": user.user._id
+        }
+        const peticion = await fetch(`${API_URL}/categorys/`,{
+            method: "POST",
+            body: JSON.stringify(body),
+            headers: {"Content-type": "application/json", "Authorization": "Bearer " + user.token}
+        });
+        location.reload();
+    } catch(e){
+        console.error(e)
+    }
+};
+
+
+
+
+
+
 
 if(!localStorage.getItem("user")){
 
@@ -118,6 +170,61 @@ if(!localStorage.getItem("user")){
     
 } else {
 
+    const app = document.querySelector(".app");
+    const logged = `        <div class="user-logged">
+    <div class="opciones">
+        <button class="addTask">➕ NUEVA TAREA</button>
+        <button class="addCategory">➕ NUEVA CATEGORIA</button>
+    </div>
+    <div class="addTaskForm">
+        <h1> Nueva Tarea</h1>
+            <input type="text" name="" id="title" placeholder="Titulo">
+            <input type="text" name="" id="description" placeholder="Descripción">
+            <input type="date" name="" id="date">
+            <select name="" id="categoryList">
+                <option value="">Selecciona una categoria</option>
+            </select>
+            <input type="submit" class="button" value="Agregar Nueva Tarea" id="addTask">
+    </div>
+    <div class="addCategoryForm">
+        <h1> Nueva Categoria</h1>
+            <input type="text" name="" id="categoryname" placeholder="Nombre de Categoria">
+            <input type="number" name="" id="importance" placeholder="Importancia del 1-10">
+            <input type="submit" class="button" value="Agregar Nueva Categoria" id="addCategory">
+    </div>
+    <h1>TareasPendientes</h1>
+    <div class="tasks">  
+    </div>
+</div>`;
+
+
+
+    app.innerHTML = logged;
+
+    const optionList = document.querySelector("#categoryList");
+
+    const getCategorys = async () => {
+        try{
+            const peticion = await fetch(`${API_URL}/categorys/`,{
+                method: "GET",
+                headers: {"Content-type": "application/json", "Authorization": "Bearer " + user.token}
+            }).then(response => response.json()).then((categorys) => {
+                categorys.data.forEach((category) => 
+                {
+                    let elem = document.createElement("option");
+                    elem.value = category._id;
+                    elem.innerHTML = category.name;
+                    optionList.appendChild(elem);
+                })
+            });
+        } catch(e){
+            console.error(e)
+        }
+    }
+
+    getCategorys();
+
+
     const nav = document.querySelector(".nav");
     const close = document.createElement("input");
     const align = document.createElement("div");
@@ -133,8 +240,7 @@ if(!localStorage.getItem("user")){
 
     close.addEventListener("click", cerrarSession);
 
-    const div = document.querySelector(".tasks");
-    const user = JSON.parse(localStorage.getItem("user"));
+    const divTasks = document.querySelector(".tasks");
 
     const getTasks = async () => {
         const peticion = await fetch(`${API_URL}/tasks/`, {
@@ -149,9 +255,18 @@ if(!localStorage.getItem("user")){
         .then((tasks) => {
             tasks.data.forEach((task) => 
             {
-                let elem = document.createElement('li');
-                elem.appendChild(document.createTextNode(`${task.title}`));
-                div.appendChild(elem);
+                let elem = document.createElement('div');
+                contentDiv = `<h2 class="title">${task.title}</h2>
+                            <p class="description"><b>Descripción</b> ${task.description}</p>
+                            <p class="date"><b>Fecha</b> ${task.fecha}</p>
+                            <p class="category"><b>Categoria</b> ${task.category.name}</p>
+                            <div class="contentButtonTasks">
+                            <input type="submit" class="buttonTask updateTask" value="Editar" id="${task._id}">
+                            <input type="submit" class="buttonTask deleteTask" value="Eliminar" id="${task._id}">
+                            </div>`;
+                elem.innerHTML = contentDiv;
+                elem.classList.add("taskItem")
+                divTasks.appendChild(elem);
             })
         });
     }
@@ -170,36 +285,26 @@ if(!localStorage.getItem("user")){
         }
     });
 
+    const addCategory = document.querySelector(".addCategory");
+    const addCategoryForm = document.querySelector(".addCategoryForm");
 
-    const postTask = async () => {
-        try{
-            const title = document.querySelector("#title").value;
-            const description = document.querySelector("#description").value;
-            const date = document.querySelector("#date").value;
-            const categoryId = document.querySelector("#categoryId").value;
-            body = {
-                "title": title,
-                "description": description,
-                "fecha": date,
-                "categoryId": categoryId,
-                "userId": user.user._id
-            }
-            const peticion = await fetch(`${API_URL}/tasks/`,{
-                method: "POST",
-                body: JSON.stringify(body),
-                headers: {"Content-type": "application/json", "Authorization": "Bearer " + user.token}
-            });
-            location.reload();
-        } catch(e){
-            console.error(e)
-        }
-    }
+    addCategoryForm.style.display = "none";
+
+    addCategory.addEventListener("click", () => {
+        if(addCategoryForm.style.display == "none"){
+            addCategoryForm.style.display = "block";
+        } else if (addCategoryForm.style.display == "block"){
+            addCategoryForm.style.display = "none";
+        }  
+    })
 
     const botonAddTask = document.querySelector("#addTask");
 
     botonAddTask.addEventListener("click", postTask);
 
+    const botonAddCategory = document.querySelector("#addCategory");
+
+    botonAddCategory.addEventListener("click", postCategory);
+
+
 }
-
-
-

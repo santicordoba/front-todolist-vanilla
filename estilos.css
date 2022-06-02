@@ -38,7 +38,7 @@ body{
     font-weight: bold;
 }
 
-.registro, .login, .addTaskForm {
+.registro, .login, .addTaskForm, .addCategoryForm {
     width: 100%;
     text-align: center;
     margin: auto;
@@ -71,6 +71,28 @@ input[type="date"]{
     padding: 12px 42px;
 }
 
+input[type="number"]{
+    padding: 12px;
+}
+
+select{
+    padding: 12px;
+}
+
+.contentButtonTasks {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.buttonTask {
+    width: 40%;
+    text-align: center;
+    margin: auto;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+
 
 nav {
     width: 100%;
@@ -100,4 +122,39 @@ nav p {
 
 .align input {
     margin: 10px;
+}
+
+.tasks {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 20px
+}
+
+.taskItem{
+    width: 100%;
+    margin: 12px;
+    box-sizing: border-box;
+    border: 2px solid #333;
+    border-radius: 4px;
+}
+
+.taskItem p {
+    padding-left: 20px;
+}
+
+.taskItem p.description{
+    margin-top: 20px;
+}
+
+.taskItem p.category{
+    margin-bottom: 20px;
+}
+
+.taskItem h2 {
+    font-family: monospace;
+    font-size: 20px;
+    margin: auto;
+    text-align: center;
+    background-color: lightslategray;
+    display: block;
 }
