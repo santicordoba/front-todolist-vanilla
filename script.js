@@ -2,6 +2,13 @@ const API_URL = "http://localhost:3001/api"
 
 const user = JSON.parse(localStorage.getItem("user")) || null;
 
+const deleteTest = (event) => {
+
+    // let id = event.target.getAttribute('type');
+    // console.log(id);
+    console.log(event);
+}
+
 const cerrarSession = () => {
     localStorage.removeItem("user")
     window.location.href = "/";
@@ -51,10 +58,17 @@ const postCategory = async () => {
     }
 };
 
-
-
-
-
+const deleteTask = async (id) => {
+    try{
+        const peticion = await fetch(`${API_URL}/tasks/${id}`,{
+            method: "DELETE",
+            headers: {"Content-type": "application/json", "Authorization": "Bearer " + user.token}
+        });
+        location.reload();
+    }catch(e){
+        console.error(e)
+    }
+};
 
 
 if(!localStorage.getItem("user")){
@@ -261,8 +275,8 @@ if(!localStorage.getItem("user")){
                             <p class="date"><b>Fecha</b> ${task.fecha}</p>
                             <p class="category"><b>Categoria</b> ${task.category.name}</p>
                             <div class="contentButtonTasks">
-                            <input type="submit" class="buttonTask updateTask" value="Editar" id="${task._id}">
-                            <input type="submit" class="buttonTask deleteTask" value="Eliminar" id="${task._id}">
+                            <input type="submit" class="buttonTask updateTask" value="Editar" data-id="${task._id}">
+                            <button type="submit" class="deleteTask buttonTask" onclick='deleteTask("${task._id}")'>Eliminar</button>
                             </div>`;
                 elem.innerHTML = contentDiv;
                 elem.classList.add("taskItem")
@@ -305,6 +319,7 @@ if(!localStorage.getItem("user")){
     const botonAddCategory = document.querySelector("#addCategory");
 
     botonAddCategory.addEventListener("click", postCategory);
+
 
 
 }
