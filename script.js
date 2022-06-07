@@ -2,13 +2,6 @@ const API_URL = "http://localhost:3001/api"
 
 const user = JSON.parse(localStorage.getItem("user")) || null;
 
-const deleteTest = (event) => {
-
-    // let id = event.target.getAttribute('type');
-    // console.log(id);
-    console.log(event);
-}
-
 const cerrarSession = () => {
     localStorage.removeItem("user")
     window.location.href = "/";
@@ -58,6 +51,25 @@ const postCategory = async () => {
     }
 };
 
+const getCategorys = async (optionList) => {
+    try{
+        const peticion = await fetch(`${API_URL}/categorys/`,{
+            method: "GET",
+            headers: {"Content-type": "application/json", "Authorization": "Bearer " + user.token}
+        }).then(response => response.json()).then((categorys) => {
+            categorys.data.forEach((category) => 
+            {
+                let elem = document.createElement("option");
+                elem.value = category._id;
+                elem.innerHTML = category.name;
+                optionList.appendChild(elem);
+            })
+        });
+    } catch(e){
+        console.error(e)
+    }
+}
+
 const deleteTask = async (id) => {
     try{
         const peticion = await fetch(`${API_URL}/tasks/${id}`,{
@@ -69,6 +81,95 @@ const deleteTask = async (id) => {
         console.error(e)
     }
 };
+
+const getCategorysList = async (listaCategorias) => {
+    try{
+        const peticion = await fetch(`${API_URL}/categorys/`,{
+            method: "GET",
+            headers: {"Content-type": "application/json", "Authorization": "Bearer " + user.token}
+        })
+        const categorys = await peticion.json();
+        categorys.data.forEach(category => {
+            listaCategorias.innerHTML += `<input type="text" value="${category.name}" id="nameEdit"> 
+            <input type="text" value="${category.importance}" id="importanceEdit"> 
+            <button type="submit" onclick="deleteCategory('${category._id}')">Delete</button> 
+            <button type="submit" onclick="editCategory('${category._id}')">Edit</button>`;
+        });
+    }
+    catch(e){
+        console.error(e)
+    }
+ }
+
+ const deleteCategory = async (id) => {
+     try{
+         const peticion = await fetch(`${API_URL}/categorys/${id}`,{
+             method: "DELETE",
+             headers: {"Content-type": "application/json", "Authorization": "Bearer " + user.token}
+         });
+            location.reload();
+     }catch(e){
+         console.log(e);
+     }
+ }
+
+ const editCategory = async (id) => {
+        try{
+            const name = document.querySelector("#nameEdit").value;
+            const importance = document.querySelector("#importanceEdit").value;
+            body = {
+                "name": name,
+                "importance": importance,
+            }
+            const peticion = await fetch(`${API_URL}/categorys/${id}`,{
+                method: "PUT",
+                body: JSON.stringify(body),
+                headers: {"Content-type": "application/json", "Authorization": "Bearer " + user.token}
+            });
+            location.reload();
+        }catch(e){
+            console.log(e);
+        }
+ }
+
+
+ const mostrarForm = (id) => {
+    const updateTaskForm = document.querySelector(".id_"+id);
+
+    if(updateTaskForm.style.display == "none"){
+        updateTaskForm.style.display = "block";
+    } else {
+        updateTaskForm.style.display = "none";
+    }
+}
+
+const getCategorysAndCheck = async (optionList, categorySelect) => {
+    try{
+        const peticion = await fetch(`${API_URL}/categorys/`,{
+            method: "GET",
+            headers: {"Content-type": "application/json", "Authorization": "Bearer " + user.token}
+        }).then(response => response.json()).then((categorys) => {
+            categorys.data.forEach((category) => 
+            {
+                let elem = document.createElement("option");
+                elem.value = category._id;
+                elem.innerHTML = category.name;
+                if(category.name == categorySelect){
+                    elem.setAttribute("selected", "selected");
+                }
+                optionList.appendChild(elem);
+            })
+        });
+    } catch(e){
+        console.error(e)
+    }
+}
+
+const getCategorysEdit = async (id, category) => {
+    console.log(category);
+    optionList = document.querySelector("#id_"+id);
+    getCategorysAndCheck(optionList,category);
+}
 
 
 if(!localStorage.getItem("user")){
@@ -188,7 +289,7 @@ if(!localStorage.getItem("user")){
     const logged = `        <div class="user-logged">
     <div class="opciones">
         <button class="addTask">➕ NUEVA TAREA</button>
-        <button class="addCategory">➕ NUEVA CATEGORIA</button>
+        <button class="menuCategoria">VER CATEGORIAS</button>
     </div>
     <div class="addTaskForm">
         <h1> Nueva Tarea</h1>
@@ -201,6 +302,7 @@ if(!localStorage.getItem("user")){
             <input type="submit" class="button" value="Agregar Nueva Tarea" id="addTask">
     </div>
     <div class="addCategoryForm">
+        <div class="listaCategorias"></div>
         <h1> Nueva Categoria</h1>
             <input type="text" name="" id="categoryname" placeholder="Nombre de Categoria">
             <input type="number" name="" id="importance" placeholder="Importancia del 1-10">
@@ -217,26 +319,12 @@ if(!localStorage.getItem("user")){
 
     const optionList = document.querySelector("#categoryList");
 
-    const getCategorys = async () => {
-        try{
-            const peticion = await fetch(`${API_URL}/categorys/`,{
-                method: "GET",
-                headers: {"Content-type": "application/json", "Authorization": "Bearer " + user.token}
-            }).then(response => response.json()).then((categorys) => {
-                categorys.data.forEach((category) => 
-                {
-                    let elem = document.createElement("option");
-                    elem.value = category._id;
-                    elem.innerHTML = category.name;
-                    optionList.appendChild(elem);
-                })
-            });
-        } catch(e){
-            console.error(e)
-        }
-    }
 
-    getCategorys();
+    getCategorys(optionList);
+
+    const listaCategorias = document.querySelector(".listaCategorias");
+
+    getCategorysList(listaCategorias);
 
 
     const nav = document.querySelector(".nav");
@@ -275,8 +363,23 @@ if(!localStorage.getItem("user")){
                             <p class="date"><b>Fecha</b> ${task.fecha}</p>
                             <p class="category"><b>Categoria</b> ${task.category.name}</p>
                             <div class="contentButtonTasks">
-                            <input type="submit" class="buttonTask updateTask" value="Editar" data-id="${task._id}">
+                            <button type="submit" class="deleteTask buttonTask" onclick='mostrarForm("${task._id}")'>Editar</button>
                             <button type="submit" class="deleteTask buttonTask" onclick='deleteTask("${task._id}")'>Eliminar</button>
+                            </div>
+                            <div class="updateTaskForm id_${task._id}" style="display:none;">
+                            <h1> Editar Tarea</h1>
+                            <p>Titulo</p>
+                            <input type="text" name="" id="title" value='${task.title}'>
+                            <p>Descripción</p>
+                            <input type="text" name="" id="description" value='${task.description}'>
+                            <p>Categoria</p>
+                            <select name="" id="id_${task._id}">
+                            <option value="">Presiona el boton para cargar las categorias</option>
+                            </select><br><br>
+                            <button class="buttonTask" onclick='getCategorysEdit("${task._id}","${task.category.name}")'>Cargar Categorias</button>
+                            <br>
+                            <input type="date" name="" id="date" value='${task.fecha}'>
+                            <button type="submit" class="deleteTask buttonTask" onclick='updateTask("${task._id}")'>Guardar Cambios</button>
                             </div>`;
                 elem.innerHTML = contentDiv;
                 elem.classList.add("taskItem")
@@ -285,6 +388,7 @@ if(!localStorage.getItem("user")){
         });
     }
     getTasks()
+
 
     const addTask = document.querySelector(".addTask");
     const addTaskForm = document.querySelector(".addTaskForm");
@@ -299,12 +403,12 @@ if(!localStorage.getItem("user")){
         }
     });
 
-    const addCategory = document.querySelector(".addCategory");
+    const menuCategoria = document.querySelector(".menuCategoria");
     const addCategoryForm = document.querySelector(".addCategoryForm");
 
     addCategoryForm.style.display = "none";
 
-    addCategory.addEventListener("click", () => {
+    menuCategoria.addEventListener("click", () => {
         if(addCategoryForm.style.display == "none"){
             addCategoryForm.style.display = "block";
         } else if (addCategoryForm.style.display == "block"){
