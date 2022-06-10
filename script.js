@@ -171,6 +171,35 @@ const getCategorysEdit = async (id, category) => {
     getCategorysAndCheck(optionList,category);
 }
 
+const cerrarModal = (id) => {
+    const updateTaskForm = document.querySelector(".id_"+id);
+    updateTaskForm.style.display = "none";
+}
+
+const updateTask = async (id) => {
+    try{
+        const title = document.querySelector("#titleEdit").value;
+        const description = document.querySelector("#descriptionEdit").value;
+        const date = document.querySelector("#dateEdit").value;
+        const categoryId = document.querySelector("#id_"+id).value;
+        body = {
+            "title": title,
+            "description": description,
+            "fecha": date,
+            "categoryId": categoryId,
+            "userId": user.user._id
+        }
+        const peticion = await fetch(`${API_URL}/tasks/${id}`,{
+            method: "PUT",
+            body: JSON.stringify(body),
+            headers: {"Content-type": "application/json", "Authorization": "Bearer " + user.token}
+        });
+        location.reload();
+    } catch(e){
+        console.error(e)
+    }
+}
+
 
 if(!localStorage.getItem("user")){
 
@@ -367,18 +396,19 @@ if(!localStorage.getItem("user")){
                             <button type="submit" class="deleteTask buttonTask" onclick='deleteTask("${task._id}")'>Eliminar</button>
                             </div>
                             <div class="updateTaskForm id_${task._id}" style="display:none;">
+                            <span class="close" onclick='cerrarModal("${task._id}")'>&times;</span>
                             <h1> Editar Tarea</h1>
                             <p>Titulo</p>
-                            <input type="text" name="" id="title" value='${task.title}'>
+                            <input type="text" name="" id="titleEdit" value='${task.title}'>
                             <p>Descripción</p>
-                            <input type="text" name="" id="description" value='${task.description}'>
+                            <input type="text" name="" id="descriptionEdit" value='${task.description}'>
                             <p>Categoria</p>
                             <select name="" id="id_${task._id}">
                             <option value="">Presiona el boton para cargar las categorias</option>
                             </select><br><br>
                             <button class="buttonTask" onclick='getCategorysEdit("${task._id}","${task.category.name}")'>Cargar Categorias</button>
                             <br>
-                            <input type="date" name="" id="date" value='${task.fecha}'>
+                            <input type="date" name="" id="dateEdit" value='${task.fecha}'>
                             <button type="submit" class="deleteTask buttonTask" onclick='updateTask("${task._id}")'>Guardar Cambios</button>
                             </div>`;
                 elem.innerHTML = contentDiv;
@@ -424,6 +454,6 @@ if(!localStorage.getItem("user")){
 
     botonAddCategory.addEventListener("click", postCategory);
 
-
+      
 
 }
