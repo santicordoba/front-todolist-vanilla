@@ -31,6 +31,51 @@ const postTask = async () => {
     }
 }
 
+const getTasks = async (divTasks) => {
+    const peticion = await fetch(`${API_URL}/tasks/`, {
+        method: "GET",
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': ' Bearer ' + user.token,
+        }
+    })
+    .then((response) => response.json())
+    .then((tasks) => {
+        tasks.data.forEach((task) => 
+        {
+            let elem = document.createElement('div');
+            contentDiv = `<h2 class="title">${task.title}</h2>
+                        <p class="description"><b>Descripción</b> ${task.description}</p>
+                        <p class="date"><b>Fecha</b> ${task.fecha}</p>
+                        <p class="category"><b>Categoria</b> ${task.category.name}</p>
+                        <div class="contentButtonTasks">
+                        <button type="submit" class="deleteTask buttonTask" onclick='mostrarForm("${task._id}")'>Editar</button>
+                        <button type="submit" class="deleteTask buttonTask" onclick='deleteTask("${task._id}")'>Eliminar</button>
+                        </div>
+                        <div class="updateTaskForm id_${task._id}" style="display:none;">
+                        <span class="close" onclick='cerrarModal("${task._id}")'>&times;</span>
+                        <h1> Editar Tarea</h1>
+                        <p>Titulo</p>
+                        <input type="text" name="" id="titleEdit_${task._id}" value='${task.title}'>
+                        <p>Descripción</p>
+                        <input type="text" name="" id="descriptionEdit_${task._id}" value='${task.description}'>
+                        <p>Categoria</p>
+                        <select name="" id="id_${task._id}">
+                        <option value="">Presiona el boton para cargar las categorias</option>
+                        </select><br><br>
+                        <button class="buttonTask" onclick='getCategorysEdit("${task._id}","${task.category.name}")'>Cargar Categorias</button>
+                        <br>
+                        <input type="date" name="" id="dateEdit_${task._id}" value='${task.fecha}'>
+                        <button type="submit" class="deleteTask buttonTask" onclick='updateTask("${task._id}")'>Guardar Cambios</button>
+                        </div>`;
+            elem.innerHTML = contentDiv;
+            elem.classList.add("taskItem")
+            divTasks.appendChild(elem);
+        })
+    });
+}
+
 const postCategory = async () => {
     try{
         const name = document.querySelector("#categoryname").value;
@@ -178,9 +223,9 @@ const cerrarModal = (id) => {
 
 const updateTask = async (id) => {
     try{
-        const title = document.querySelector("#titleEdit").value;
-        const description = document.querySelector("#descriptionEdit").value;
-        const date = document.querySelector("#dateEdit").value;
+        const title = document.querySelector("#titleEdit_"+id).value;
+        const description = document.querySelector("#descriptionEdit_"+id).value;
+        const date = document.querySelector("#dateEdit_"+id).value;
         const categoryId = document.querySelector("#id_"+id).value;
         body = {
             "title": title,
@@ -214,15 +259,15 @@ if(!localStorage.getItem("user")){
     <div class="auth">
         <div class="registro">
             <h1>Registro</h1>
-                <input type="text" name="" id="nickname" placeholder="Nickname">
-                <input type="email" name="" id="email" placeholder="Email">
-                <input type="password" name="" id="password" placeholder="Password">
+                <input type="text" name="" id="nickname" placeholder="Nickname" required>
+                <input type="email" name="" id="email" placeholder="Email" required>
+                <input type="password" name="" id="password" placeholder="Password" required>
                 <input type="submit" class="button" value="Registrarse" id="registrarse">
         </div>
         <div class="login">
             <h1>Login</h1>
-            <input type="text" name="" id="login_nickname" placeholder="Nickname">
-            <input type="password" name="" id="login_password" placeholder="Password">
+            <input type="text" name="" id="login_nickname" placeholder="Nickname" required>
+            <input type="password" name="" id="login_password" placeholder="Password" required>
             <input type="submit" class="button" value="Login" id="logearse">
         </div>
     </div>`;
@@ -279,12 +324,17 @@ if(!localStorage.getItem("user")){
     
     
     const registrarse = document.querySelector("#registrarse");
-    registrarse.addEventListener("click", postRegistro)
+    registrarse.addEventListener("click", ()=> {
+        if(document.querySelector("#nickname").value != "" && document.querySelector("#email").value != "" && document.querySelector("#password").value != ""){
+            postRegistro();
+        } else {
+            alert("Rellena todos los campos");
+        }
+    });
     
-    const postLogearse = async () => {
+    const postLogearse = async (nickname, password) => {
         try{
-            const nickname = document.querySelector("#login_nickname").value;
-            const password = document.querySelector("#login_password").value;
+            
             body = {
                 "nickname": nickname,
                 "password": password
@@ -310,7 +360,15 @@ if(!localStorage.getItem("user")){
     const logearse = document.querySelector("#logearse");
     
     
-    logearse.addEventListener("click", postLogearse);
+    logearse.addEventListener("click", (e)=>{
+        if(document.querySelector("#login_nickname").value == "" || document.querySelector("#login_password").value == ""){
+            alert("Rellene todos los campos")
+        } else {
+            const nickname = document.querySelector("#login_nickname").value;
+            const password = document.querySelector("#login_password").value;
+            postLogearse(nickname, password);
+        }
+    });
     
 } else {
 
@@ -373,51 +431,8 @@ if(!localStorage.getItem("user")){
 
     const divTasks = document.querySelector(".tasks");
 
-    const getTasks = async () => {
-        const peticion = await fetch(`${API_URL}/tasks/`, {
-            method: "GET",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': ' Bearer ' + user.token,
-            }
-        })
-        .then((response) => response.json())
-        .then((tasks) => {
-            tasks.data.forEach((task) => 
-            {
-                let elem = document.createElement('div');
-                contentDiv = `<h2 class="title">${task.title}</h2>
-                            <p class="description"><b>Descripción</b> ${task.description}</p>
-                            <p class="date"><b>Fecha</b> ${task.fecha}</p>
-                            <p class="category"><b>Categoria</b> ${task.category.name}</p>
-                            <div class="contentButtonTasks">
-                            <button type="submit" class="deleteTask buttonTask" onclick='mostrarForm("${task._id}")'>Editar</button>
-                            <button type="submit" class="deleteTask buttonTask" onclick='deleteTask("${task._id}")'>Eliminar</button>
-                            </div>
-                            <div class="updateTaskForm id_${task._id}" style="display:none;">
-                            <span class="close" onclick='cerrarModal("${task._id}")'>&times;</span>
-                            <h1> Editar Tarea</h1>
-                            <p>Titulo</p>
-                            <input type="text" name="" id="titleEdit" value='${task.title}'>
-                            <p>Descripción</p>
-                            <input type="text" name="" id="descriptionEdit" value='${task.description}'>
-                            <p>Categoria</p>
-                            <select name="" id="id_${task._id}">
-                            <option value="">Presiona el boton para cargar las categorias</option>
-                            </select><br><br>
-                            <button class="buttonTask" onclick='getCategorysEdit("${task._id}","${task.category.name}")'>Cargar Categorias</button>
-                            <br>
-                            <input type="date" name="" id="dateEdit" value='${task.fecha}'>
-                            <button type="submit" class="deleteTask buttonTask" onclick='updateTask("${task._id}")'>Guardar Cambios</button>
-                            </div>`;
-                elem.innerHTML = contentDiv;
-                elem.classList.add("taskItem")
-                divTasks.appendChild(elem);
-            })
-        });
-    }
-    getTasks()
+    
+    getTasks(divTasks)
 
 
     const addTask = document.querySelector(".addTask");
