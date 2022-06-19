@@ -80,7 +80,8 @@ select{
 }
 
 .contentButtonTasks {
-    display: flex;
+    display: grid;
+    gap: 5px;
     margin-bottom: 20px;
 }
 
@@ -90,6 +91,9 @@ select{
     margin: auto;
     background-color: transparent;
     cursor: pointer;
+    border: 1px solid black;
+    border-radius: 4px;
+    color: black;
 }
 
 
@@ -122,6 +126,33 @@ nav p {
 
 .align input {
     margin: 10px;
+}
+.divFecha{
+    grid-column: 1 / -1;
+}
+
+.progress {
+    grid-column: 1 / -1;
+    margin: auto;
+    width: 50%;
+    height: 20px;
+    border: 1px solid black;
+    text-align: center;
+    color: white;
+}
+
+.progress-bar{
+    background-color: rgb(117, 180, 44);
+    width: 0%;
+    height: 20px;
+}
+
+.progress p{
+    margin: auto;
+    font-family: monospace;
+    font-size: 18px;
+    color: black;
+    margin-top: -20px;
 }
 
 .tasks {
@@ -212,3 +243,8 @@ nav p {
     text-decoration: none;
     cursor: pointer;
   }
+
+.completed{
+    text-align: center;
+    margin-right: 20px;
+}

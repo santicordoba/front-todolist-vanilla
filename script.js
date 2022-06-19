@@ -32,6 +32,7 @@ const postTask = async () => {
 }
 
 const getTasks = async (divTasks) => {
+    const opciones = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
     const peticion = await fetch(`${API_URL}/tasks/`, {
         method: "GET",
         headers: {
@@ -42,16 +43,47 @@ const getTasks = async (divTasks) => {
     })
     .then((response) => response.json())
     .then((tasks) => {
+        var fechaActual = tasks.data[0].fecha;
+        var fechaFormateada = formatearFecha(fechaActual);
+        const divTasksFecha = document.createElement("div");
+        divTasksFecha.classList.add("divFecha");
+        divTasksFecha.innerHTML += `<h2>Tareas para la fecha ${fechaFormateada}</h2>`;
+        divTasks.appendChild(divTasksFecha);
+        var totalTaskXDia = 0;
+        var taskCompletadas = 0;
         tasks.data.forEach((task) => 
         {
+            console.log(fechaActual)
+            console.log(task.title)
+            if(task.fecha == fechaActual){
+                totalTaskXDia++;
+            } else {
+                const progreso = document.createElement("div");
+                progreso.classList.add("progress");
+                progreso.innerHTML += `<div class="progress-bar" role="progressbar" style="width: ${taskCompletadas*100/totalTaskXDia}%" aria-valuenow="${taskCompletadas*100/totalTaskXDia}" aria-valuemin="0" aria-valuemax="100">
+                </div>
+                <p>${taskCompletadas*100/totalTaskXDia}% Completado</p>`;
+                divTasks.appendChild(progreso);
+                totalTaskXDia = 0;
+                taskCompletadas = 0;
+                const divTasksFecha = document.createElement("div");
+                divTasksFecha.classList.add("divFecha");
+                var fechaFormateada = formatearFecha(task.fecha);
+                divTasksFecha.innerHTML += `<h2>Tareas para la fecha ${fechaFormateada}</h2>`;
+                divTasks.appendChild(divTasksFecha);
+                
+            }
             let elem = document.createElement('div');
             contentDiv = `<h2 class="title">${task.title}</h2>
                         <p class="description"><b>Descripción</b> ${task.description}</p>
                         <p class="date"><b>Fecha</b> ${task.fecha}</p>
+                        <p class="status"><b>Estado</b> ${task.status}</p>
                         <p class="category"><b>Categoria</b> ${task.category.name}</p>
                         <div class="contentButtonTasks">
-                        <button type="submit" class="deleteTask buttonTask" onclick='mostrarForm("${task._id}")'>Editar</button>
+                        <button type="submit" class="updateTask buttonTask" onclick='mostrarForm("${task._id}")'>Editar</button>
                         <button type="submit" class="deleteTask buttonTask" onclick='deleteTask("${task._id}")'>Eliminar</button>
+                        ${task.status == "pending" ? `<button type="submit" class="finishTask buttonTask" onclick='updateStatus("${task._id}")'>Marcar como completado</button>` : ""}
+                        ${task.status == "finished" ? `<p class='completed'>✔️ Completado</p>` : ""}
                         </div>
                         <div class="updateTaskForm id_${task._id}" style="display:none;">
                         <span class="close" onclick='cerrarModal("${task._id}")'>&times;</span>
@@ -66,13 +98,28 @@ const getTasks = async (divTasks) => {
                         </select><br><br>
                         <button class="buttonTask" onclick='getCategorysEdit("${task._id}","${task.category.name}")'>Cargar Categorias</button>
                         <br>
+                        <p>Estado</p>
+                        <select name="" id="statusEdit_${task._id}">
+                        <option value="${task.status}">Estado Actual</option>
+                        <option value="pending">Pendiente</option>
+                        <option value="finished">Completado</option>
+                        </select>
                         <input type="date" name="" id="dateEdit_${task._id}" value='${task.fecha}'>
                         <button type="submit" class="deleteTask buttonTask" onclick='updateTask("${task._id}")'>Guardar Cambios</button>
                         </div>`;
             elem.innerHTML = contentDiv;
             elem.classList.add("taskItem")
             divTasks.appendChild(elem);
+            fechaActual = task.fecha;
+            if(task.status == "finished"){
+                taskCompletadas++;
+            }
         })
+        const progreso = document.createElement("div");
+        progreso.classList.add("progress");
+        progreso.innerHTML += `<div class="progress-bar" role="progressbar" style="width: ${taskCompletadas*100/totalTaskXDia}%" aria-valuenow="${taskCompletadas*100/totalTaskXDia}" aria-valuemin="0" aria-valuemax="100">
+        </div><p>${taskCompletadas*100/totalTaskXDia}% Completado</p>`;
+        divTasks.appendChild(progreso);
     });
 }
 
@@ -144,21 +191,21 @@ const getCategorysList = async (listaCategorias) => {
     catch(e){
         console.error(e)
     }
- }
+}
 
- const deleteCategory = async (id) => {
-     try{
-         const peticion = await fetch(`${API_URL}/categorys/${id}`,{
-             method: "DELETE",
-             headers: {"Content-type": "application/json", "Authorization": "Bearer " + user.token}
-         });
+const deleteCategory = async (id) => {
+    try{
+        const peticion = await fetch(`${API_URL}/categorys/${id}`,{
+            method: "DELETE",
+            headers: {"Content-type": "application/json", "Authorization": "Bearer " + user.token}
+        });
             location.reload();
-     }catch(e){
-         console.log(e);
-     }
- }
+    }catch(e){
+        console.log(e);
+    }
+}
 
- const editCategory = async (id) => {
+const editCategory = async (id) => {
         try{
             const name = document.querySelector("#nameEdit").value;
             const importance = document.querySelector("#importanceEdit").value;
@@ -175,10 +222,10 @@ const getCategorysList = async (listaCategorias) => {
         }catch(e){
             console.log(e);
         }
- }
+}
 
 
- const mostrarForm = (id) => {
+const mostrarForm = (id) => {
     const updateTaskForm = document.querySelector(".id_"+id);
 
     if(updateTaskForm.style.display == "none"){
@@ -221,17 +268,33 @@ const cerrarModal = (id) => {
     updateTaskForm.style.display = "none";
 }
 
+const updateStatus = async (id) => {
+    try{
+        const peticion = await fetch(`${API_URL}/tasks/toggle/${id}`,{
+            method: "PUT",
+            headers: {"Content-type": "application/json", "Authorization": "Bearer " + user.token}
+        });
+        location.reload();
+    }catch(e){
+        console.error(e)
+    }
+}
+
+
 const updateTask = async (id) => {
     try{
         const title = document.querySelector("#titleEdit_"+id).value;
         const description = document.querySelector("#descriptionEdit_"+id).value;
         const date = document.querySelector("#dateEdit_"+id).value;
+        const status = document.querySelector("#statusEdit_"+id).value;
         const categoryId = document.querySelector("#id_"+id).value;
+        console.log(status);
         body = {
             "title": title,
             "description": description,
             "fecha": date,
             "categoryId": categoryId,
+            "status": status,
             "userId": user.user._id
         }
         const peticion = await fetch(`${API_URL}/tasks/${id}`,{
@@ -243,6 +306,12 @@ const updateTask = async (id) => {
     } catch(e){
         console.error(e)
     }
+}
+
+const formatearFecha = (fecha) => {
+    var fechaArray = fecha.split("-");
+    var fechaFormateada = fechaArray[2] + "/" + fechaArray[1] + "/" + fechaArray[0];
+    return fechaFormateada;
 }
 
 
@@ -463,12 +532,22 @@ if(!localStorage.getItem("user")){
 
     const botonAddTask = document.querySelector("#addTask");
 
-    botonAddTask.addEventListener("click", postTask);
+    botonAddTask.addEventListener("click", ()=>{
+        if(document.querySelector("#title").value != "" && document.querySelector("#description").value != "" && document.querySelector("#date").value != "" && document.querySelector("#categoryList").value != ""){
+            postTask();
+        } else {
+            alert("Rellena todos los campos");
+        }
+    });
 
     const botonAddCategory = document.querySelector("#addCategory");
 
-    botonAddCategory.addEventListener("click", postCategory);
-
-      
+    botonAddCategory.addEventListener("click", ()=>{
+        if(document.querySelector("#categoryname").value != "" && document.querySelector("#importance").value != ""){
+            postCategory();
+        } else {
+            alert("Rellena todos los campos");
+        }
+    });
 
 }
