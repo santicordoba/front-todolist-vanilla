@@ -131,6 +131,8 @@ nav p {
     grid-column: 1 / -1;
 }
 
+
+
 .progress {
     grid-column: 1 / -1;
     margin: auto;

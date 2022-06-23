@@ -349,6 +349,9 @@ if(!localStorage.getItem("user")){
     
     const botonRegistro = document.querySelector(".botonRegistro");
     const botonLogin = document.querySelector(".botonLogin");
+
+    const formumularioLogin = document.querySelector(".formumularioLogin");
+
     
     botonLogin.addEventListener("click", ()=>{
         if(login.style.display == "none"){
@@ -464,7 +467,7 @@ if(!localStorage.getItem("user")){
             <input type="number" name="" id="importance" placeholder="Importancia del 1-10">
             <input type="submit" class="button" value="Agregar Nueva Categoria" id="addCategory">
     </div>
-    <h1>TareasPendientes</h1>
+    <h1>Tareas Pendientes</h1>
     <div class="tasks">  
     </div>
 </div>`;
