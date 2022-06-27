@@ -53,8 +53,6 @@ const getTasks = async (divTasks) => {
         var taskCompletadas = 0;
         tasks.data.forEach((task) => 
         {
-            console.log(fechaActual)
-            console.log(task.title)
             if(task.fecha == fechaActual){
                 totalTaskXDia++;
             } else {
@@ -62,9 +60,9 @@ const getTasks = async (divTasks) => {
                 progreso.classList.add("progress");
                 progreso.innerHTML += `<div class="progress-bar" role="progressbar" style="width: ${taskCompletadas*100/totalTaskXDia}%" aria-valuenow="${taskCompletadas*100/totalTaskXDia}" aria-valuemin="0" aria-valuemax="100">
                 </div>
-                <p>${taskCompletadas*100/totalTaskXDia}% Completado</p>`;
+                <p>${(taskCompletadas*100/totalTaskXDia).toFixed(2)}% Completado</p>`;
                 divTasks.appendChild(progreso);
-                totalTaskXDia = 0;
+                totalTaskXDia = 1;
                 taskCompletadas = 0;
                 const divTasksFecha = document.createElement("div");
                 divTasksFecha.classList.add("divFecha");
@@ -118,7 +116,7 @@ const getTasks = async (divTasks) => {
         const progreso = document.createElement("div");
         progreso.classList.add("progress");
         progreso.innerHTML += `<div class="progress-bar" role="progressbar" style="width: ${taskCompletadas*100/totalTaskXDia}%" aria-valuenow="${taskCompletadas*100/totalTaskXDia}" aria-valuemin="0" aria-valuemax="100">
-        </div><p>${taskCompletadas*100/totalTaskXDia}% Completado</p>`;
+        </div><p>${(taskCompletadas*100/totalTaskXDia).toFixed(2)}% Completado</p>`;
         divTasks.appendChild(progreso);
     });
 }
